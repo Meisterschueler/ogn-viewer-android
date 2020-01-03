@@ -5,23 +5,23 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
-import android.preference.SwitchPreference;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 
-import com.meisterschueler.ognviewer.service.OgnService;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.SwitchPreference;
+
 import com.meisterschueler.ognviewer.R;
 import com.meisterschueler.ognviewer.common.AppConstants;
+import com.meisterschueler.ognviewer.service.OgnService;
 
 import timber.log.Timber;
 
-public class PrefsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class PrefsFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         addPreferencesFromResource(R.xml.preferences);
 
         SharedPreferences sharedPreferences = getPreferenceScreen().getSharedPreferences();
@@ -210,12 +210,12 @@ public class PrefsFragment extends PreferenceFragment implements SharedPreferenc
             ActivityCompat.requestPermissions(getActivity(), new String[]{fineLocationPermissionString}, AppConstants.REQUEST_CODE_LOCATION_TCP_UPDATES);
         } else {
             // Permission has already been granted
-            Timber.d("Location permisson granted");
+            Timber.d("Location permission granted");
         }
     }
 
     public void setTCPServerActiveState(Boolean active) {
-        SwitchPreference tcpPref = (SwitchPreference) findPreference(getString(R.string.key_tcp_server_active_preference));
+        SwitchPreference tcpPref = findPreference(getString(R.string.key_tcp_server_active_preference));
 
         if (active) {
             tcpPref.setSummary("on");

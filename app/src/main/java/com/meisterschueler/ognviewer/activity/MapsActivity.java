@@ -21,10 +21,6 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.preference.PreferenceManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.text.format.DateFormat;
 import android.view.Gravity;
 import android.view.Menu;
@@ -36,6 +32,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.preference.PreferenceManager;
+
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
@@ -44,8 +45,8 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Circle;
@@ -551,7 +552,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,
             icon = null; //maybe helps to avoid OutOfMemoryError 2018-02-07
             icon = iconGenerator.makeIcon(receiverName); //CAUTION: sometimes causes OutOfMemoryError
         } catch (Exception e) { //cannot catch OutOfMemoryError
-            Timber.d("updating receiver caused: " + e.getMessage());
+            Timber.d("updating receiver caused: %s", e.getMessage());
         } catch (Throwable t) { //cannot catch OutOfMemoryError
             Timber.d("updating receiver caused an exception"); //just for testing and can be removed 2018-01-30
         }
@@ -988,7 +989,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,
 
     private void checkSetUpMap() {
         if (mMap == null) {
-            MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
+            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
             mapFragment.getMapAsync(this);
         }
     }
@@ -1123,7 +1124,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,
 
         if (movingFilterActive) {
             if (currentLocation != null && ognService != null) {
-                float radius = ognService.getMovingfilterRange();
+                float radius = ognService.getMovingFilterRange();
 
                 rangeCircle.setStrokePattern(Arrays.asList(new Dash(20), new Gap(20)));
                 rangeCircle.setCenter(currentLocation);

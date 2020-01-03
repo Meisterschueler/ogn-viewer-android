@@ -1,7 +1,5 @@
 package com.meisterschueler.ognviewer.common;
 
-import android.os.Environment;
-
 import com.meisterschueler.ognviewer.CustomAircraftDescriptor;
 
 import org.apache.commons.csv.CSVFormat;
@@ -12,15 +10,13 @@ import org.ogn.commons.beacon.AircraftDescriptor;
 import org.ogn.commons.beacon.descriptor.AircraftDescriptorProvider;
 import org.ogn.commons.beacon.impl.AircraftDescriptorImpl;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import co.uk.rushorm.core.RushCore;
@@ -71,46 +67,35 @@ public class CustomAircraftDescriptorProvider implements AircraftDescriptorProvi
         aircraftDescriptorMap.clear();
     }
 
-    public String writeToFile() {
-        File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
-        dir = new File(dir, "ogn");
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-
-        String currentTimeString = new SimpleDateFormat("yyyy-MM-dd_HHmmss", Locale.getDefault())
-                .format(Calendar.getInstance().getTime());
-
-        String defaultFilename = "ognviewer_export_" + currentTimeString +".csv";
-
-        File file = new File(dir, defaultFilename);
+    public int writeToFile(OutputStream outputStream) {
         try (
-                FileWriter fileWriter = new FileWriter(file);
-                CSVPrinter csvPrinter = new CSVPrinter(fileWriter, CSVFormat.DEFAULT
-                        .withHeader(CSV_ADDRESS_KEY, CSV_REGNUMBER_KEY, CSV_COMPETITIONNAME_KEY,
-                                CSV_OWNER_KEY, CSV_MODEL_KEY));
+                OutputStreamWriter writer = new OutputStreamWriter(outputStream);
+                CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT
+                        .withHeader(CSV_ADDRESS_KEY, CSV_REGNUMBER_KEY, CSV_COMPETITIONNAME_KEY, CSV_OWNER_KEY, CSV_MODEL_KEY));
         ) {
+            int exportCount = 0;
             for (CustomAircraftDescriptor cad : aircraftDescriptorMap.values()) {
                 csvPrinter.printRecord(cad.address, cad.regNumber, cad.CN, cad.owner, cad.model);
+                exportCount++;
             }
-            return file.getCanonicalPath();
+
+            return exportCount;
         } catch (IOException ex) {
-            Timber.wtf("Error while exporting aircraft to file. " + ex.getMessage());
-            return null;
+            Timber.wtf("Error while exporting aircraft to file. %s", ex.getMessage());
+            return -1;
         }
     }
 
-    public int readFromFile(File file) {
-        int importCount = -1;
+    public int readFromFile(InputStream inputStream) {
         try (
-                FileReader reader = new FileReader(file);
+                InputStreamReader reader = new InputStreamReader(inputStream);
                 CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT
                         .withHeader(CSV_ADDRESS_KEY, CSV_REGNUMBER_KEY, CSV_COMPETITIONNAME_KEY, CSV_OWNER_KEY, CSV_MODEL_KEY)
                         .withFirstRecordAsHeader()
                         .withIgnoreHeaderCase()
                         .withTrim());
         ) {
-            importCount = 0;
+            int importCount = 0;
             for (CSVRecord csvRecord : csvParser) {
                 if (!aircraftDescriptorMap.containsKey(csvRecord.get(CSV_ADDRESS_KEY))) {
                     CustomAircraftDescriptor cad = new CustomAircraftDescriptor(csvRecord.get(CSV_ADDRESS_KEY),
@@ -122,7 +107,7 @@ public class CustomAircraftDescriptorProvider implements AircraftDescriptorProvi
             }
             return importCount;
         } catch (IOException ex) {
-            Timber.wtf("Error while importing aircraft from file. " + ex.getMessage());
+            Timber.wtf("Error while importing aircraft from file. %s", ex.getMessage());
             return -1;
         }
     }

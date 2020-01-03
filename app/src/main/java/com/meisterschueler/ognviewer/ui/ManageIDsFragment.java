@@ -3,13 +3,10 @@ package com.meisterschueler.ognviewer.ui;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ListFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -18,23 +15,32 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.ListFragment;
+
 import com.meisterschueler.ognviewer.CustomAircraftDescriptor;
 import com.meisterschueler.ognviewer.R;
 import com.meisterschueler.ognviewer.common.AircraftDescriptorProviderHelper;
 import com.meisterschueler.ognviewer.common.AppConstants;
 import com.meisterschueler.ognviewer.common.CustomAircraftDescriptorProvider;
-import com.meisterschueler.ognviewer.common.FilePathHelper;
 
-import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 import java.util.Map;
 
 public class ManageIDsFragment extends ListFragment implements AircraftDialogCallback {
 
-    private CustomAircraftDescriptorProvider adp1;
+    private CustomAircraftDescriptorProvider customAircraftDescriptorProvider;
     private Map<String, CustomAircraftDescriptor> aircraftDescriptorMap;
     private CustomAircraftDescriptorAdapter adapter;
 
     private static final int REQUEST_CODE_IMPORT = 123;
+    private static final int REQUEST_CODE_EXPORT = 456;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -70,7 +76,7 @@ public class ManageIDsFragment extends ListFragment implements AircraftDialogCal
                     public void onClick(DialogInterface dialog, int which) {
                         switch (which){
                             case DialogInterface.BUTTON_POSITIVE:
-                                adp1.removeAll();
+                                customAircraftDescriptorProvider.removeAll();
                                 resetListAdapter();
                                 break;
 
@@ -95,13 +101,33 @@ public class ManageIDsFragment extends ListFragment implements AircraftDialogCal
         super.onActivityResult(requestCode, resultCode, data);
 
         if(requestCode == REQUEST_CODE_IMPORT && resultCode == Activity.RESULT_OK && data != null) {
-            int importCount = adp1.readFromFile(new File(FilePathHelper.getPath(getActivity(), data.getData())));
-            if (importCount > -1) {
-                resetListAdapter();
-                Toast.makeText(getActivity(), "Imported " + importCount + " aircraft.", Toast.LENGTH_LONG).show();
-            } else {
-                Toast.makeText(getActivity(), "Error during import.", Toast.LENGTH_LONG).show();
+            try {
+                InputStream inputStream = getContext().getContentResolver().openInputStream(data.getData());
+                int importCount = customAircraftDescriptorProvider.readFromFile(inputStream);
+                if (importCount > -1) {
+                    resetListAdapter();
+                    Toast.makeText(getActivity(), "Imported " + importCount + " aircraft.", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getActivity(), "Error during import.", Toast.LENGTH_LONG).show();
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
             }
+
+
+        } else if(requestCode == REQUEST_CODE_EXPORT && resultCode == Activity.RESULT_OK && data != null) {
+            try {
+                OutputStream outputStream = getContext().getContentResolver().openOutputStream(data.getData());
+                int exportCount = customAircraftDescriptorProvider.writeToFile(outputStream);
+                if (exportCount > -1) {
+                    Toast.makeText(getActivity(), "Exported " + exportCount + " aircraft.", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getActivity(), "Error during export.", Toast.LENGTH_LONG).show();
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+
 
         }
     }
@@ -110,8 +136,8 @@ public class ManageIDsFragment extends ListFragment implements AircraftDialogCal
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        adp1 = (CustomAircraftDescriptorProvider) AircraftDescriptorProviderHelper.getCustomDbAircraftDescriptorProvider();
-        aircraftDescriptorMap = adp1.getAircraftDescriptorMap();
+        customAircraftDescriptorProvider = (CustomAircraftDescriptorProvider) AircraftDescriptorProviderHelper.getCustomDbAircraftDescriptorProvider();
+        aircraftDescriptorMap = customAircraftDescriptorProvider.getAircraftDescriptorMap();
 
         resetListAdapter();
 
@@ -127,7 +153,7 @@ public class ManageIDsFragment extends ListFragment implements AircraftDialogCal
                             .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int id) {
-                                    adp1.removeCustomAircraftDescriptor(cad);
+                                    customAircraftDescriptorProvider.removeCustomAircraftDescriptor(cad);
                                     resetListAdapter();
                                 }
                             })
@@ -187,12 +213,16 @@ public class ManageIDsFragment extends ListFragment implements AircraftDialogCal
 
     public void exportItems() {
         if (checkStoragePermissions(AppConstants.REQUEST_CODE_STORAGE_EXPORT)) {
-            String filePath = adp1.writeToFile();
-            if (filePath != null) {
-                Toast.makeText(getActivity(), "Exported aircraft to " + filePath, Toast.LENGTH_LONG).show();
-            } else {
-                Toast.makeText(getActivity(), "Error during export.", Toast.LENGTH_LONG).show();
-            }
+            String currentTimeString = new SimpleDateFormat("yyyy-MM-dd_HHmmss", Locale.getDefault())
+                    .format(Calendar.getInstance().getTime());
+
+            String defaultFilename = "ognviewer_export_" + currentTimeString +".csv";
+
+            Intent intentExport = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+            intentExport.addCategory(Intent.CATEGORY_OPENABLE);
+            intentExport.setType("text/comma-separated-values");
+            intentExport.putExtra(Intent.EXTRA_TITLE, defaultFilename);
+            startActivityForResult(intentExport, REQUEST_CODE_EXPORT);
         }
 
     }

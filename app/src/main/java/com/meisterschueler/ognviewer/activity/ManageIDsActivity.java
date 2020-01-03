@@ -17,7 +17,7 @@ public class ManageIDsActivity extends BaseActivity {
 
         manageIDsActivity = new ManageIDsFragment();
 
-        getFragmentManager().beginTransaction()
+        getSupportFragmentManager().beginTransaction()
                 .replace(android.R.id.content, manageIDsActivity)
                 .commit();
     }

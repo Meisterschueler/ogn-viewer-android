@@ -1,15 +1,15 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 27
-    buildToolsVersion "28.0.2"
+    compileSdkVersion 29
+    buildToolsVersion "28.0.3"
 
     defaultConfig {
         applicationId "com.meisterschueler.ognviewer"
         minSdkVersion 19
-        targetSdkVersion 27
-        versionCode 46
-        versionName "1.4.4"
+        targetSdkVersion 29
+        versionCode 47
+        versionName "1.4.5"
     }
 
     buildTypes {
@@ -22,19 +22,20 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.google.android.gms:play-services-maps:15.0.1'
-    implementation 'com.google.android.gms:play-services-location:15.0.1'
+    implementation 'com.google.android.gms:play-services-maps:17.0.0'
+    implementation 'com.google.android.gms:play-services-location:17.0.0'
     implementation 'org.ogn:ogn-commons-java:2.0.0-SNAPSHOT'
     implementation 'org.ogn:ogn-client-java:1.0.0-SNAPSHOT'
     implementation 'com.google.maps.android:android-maps-utils:0.5'
-    implementation "com.android.support:support-v4:27.1.1"
     implementation 'co.uk.rushorm:rushandroid:1.2.0' // leave at 1.2.0 to avoid issues 2018-05-15
     testImplementation 'junit:junit:4.12'
-    testImplementation 'org.robolectric:robolectric:3.8'
+    testImplementation 'org.robolectric:robolectric:4.2.1'
     implementation 'com.jakewharton.timber:timber:4.7.1'
+    implementation "androidx.localbroadcastmanager:localbroadcastmanager:1.0.0"
+    implementation "androidx.preference:preference:1.1.0"
 
-    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.5.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
 
     implementation "org.apache.commons:commons-csv:1.5"
 }

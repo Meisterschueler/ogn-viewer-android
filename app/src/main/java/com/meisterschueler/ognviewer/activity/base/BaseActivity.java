@@ -1,15 +1,16 @@
 package com.meisterschueler.ognviewer.activity.base;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.meisterschueler.ognviewer.common.AppConstants;
 
 @SuppressLint("Registered")
-public class BaseActivity extends Activity {
+public class BaseActivity extends AppCompatActivity {
 
     KillBroadcastReceiver killBroadcastReceiver;
 

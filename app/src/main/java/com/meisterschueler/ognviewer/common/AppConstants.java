@@ -2,13 +2,14 @@ package com.meisterschueler.ognviewer.common;
 
 
 public class AppConstants {
-    // permission request codes
+    // permission request codes (must be 0 to 65535 for AppCompat!)
+    // so keep it unsigned short: https://stackoverflow.com/questions/33331073/android-what-to-choose-for-requestcode-values/33331459#33331459
     public static final int REQUEST_CODE_LOCATION_ZOOM = 54321;
     public static final int REQUEST_CODE_LOCATION_FILTER = 2468;
-    public static final int REQUEST_CODE_LOCATION_TCP_UPDATES = 1122334455;
+    public static final int REQUEST_CODE_LOCATION_TCP_UPDATES = 12341;
     public static final int REQUEST_CODE_LOCATION_TCP_UPDATES_FROM_SERVICE = 1234;
-    public static final int REQUEST_CODE_STORAGE_IMPORT = 2018092101;
-    public static final int REQUEST_CODE_STORAGE_EXPORT = 2018092102;
+    public static final int REQUEST_CODE_STORAGE_IMPORT = 20201;
+    public static final int REQUEST_CODE_STORAGE_EXPORT = 20202;
 
     // Intents
     public static final String INTENT_AIRCRAFT_BEACON = "AIRCRAFT-BEACON";

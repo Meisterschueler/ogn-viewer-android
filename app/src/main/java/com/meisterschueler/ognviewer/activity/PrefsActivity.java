@@ -19,7 +19,7 @@ public class PrefsActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         prefsFragment = new PrefsFragment();
-        getFragmentManager().beginTransaction()
+        getSupportFragmentManager().beginTransaction()
                 .replace(android.R.id.content, prefsFragment)
                 .commit();
 

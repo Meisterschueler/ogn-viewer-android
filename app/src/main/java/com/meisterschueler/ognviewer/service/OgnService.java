@@ -16,13 +16,14 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.Looper;
-import android.preference.PreferenceManager;
-import android.support.annotation.RequiresApi;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.widget.Toast;
+
+import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.preference.PreferenceManager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -165,7 +166,7 @@ public class OgnService extends Service implements AircraftBeaconListener, Recei
                 // Show an explanation to the user *asynchronously* -- don't block
                 // this thread waiting for the user's response! After the user
                 // sees the explanation, try again to request the permission.
-                Timber.d("Location permisson already denied");
+                Timber.d("Location permission already denied");
                 // ask again? in activity? 2018-03-23
                 // onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults)
                 // https://developer.android.com/training/permissions/requesting.html#java
@@ -177,7 +178,7 @@ public class OgnService extends Service implements AircraftBeaconListener, Recei
             return;
         } else {
             // Permission has already been granted
-            Timber.d("Location permisson granted");
+            Timber.d("Location permission granted");
         }
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context);
@@ -216,7 +217,7 @@ public class OgnService extends Service implements AircraftBeaconListener, Recei
             long lastTimestamp = aircraftBundleMap.get(address).aircraftBeacon.getTimestamp();
             long diffTimeInMS = aircraftBeacon.getTimestamp() - lastTimestamp;
             if (diffTimeInMS <= AppConstants.MINIMAL_AIRCRAFT_DIFF_TIME_IN_MS) {
-                Timber.v("skipped position for " + address);
+                Timber.v("skipped position for %s", address);
                 return; // skip deprecated positions
             }
         }
@@ -248,7 +249,7 @@ public class OgnService extends Service implements AircraftBeaconListener, Recei
         int seconds = c.get(Calendar.SECOND);
         int minutes = c.get(Calendar.MINUTE);
         Timber.v(aircraftBundleMap.size() + " AircraftBeacons " + hours + ":" + minutes + ":" + seconds);
-        Timber.v("Last aircraft: " + aircraftBeacon.getAddress());
+        Timber.v("Last aircraft: %s", aircraftBeacon.getAddress());
     }
 
     private boolean sendAircraftToMap(AircraftBundle aircraftBundle) {
@@ -384,7 +385,7 @@ public class OgnService extends Service implements AircraftBeaconListener, Recei
         int seconds = c.get(Calendar.SECOND);
         int minutes = c.get(Calendar.MINUTE);
         Timber.v(receiverBundleMap.size() + " ReceiverBeacons " + hours + ":" + minutes + ":" + seconds);
-        Timber.v("Last receiver: " + receiverBeacon.getId());
+        Timber.v("Last receiver: %s", receiverBeacon.getId());
     }
 
     @Override
@@ -441,30 +442,30 @@ public class OgnService extends Service implements AircraftBeaconListener, Recei
         }
     }
 
-    public float getMovingfilterRange() {
+    public float getMovingFilterRange() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String moving_filter_range = sharedPreferences.getString(getString(R.string.key_movingfilter_range_preference), getString(R.string.distance_10km));
 
         float radius = 10000;
-        if (moving_filter_range == getString(R.string.distance_10km)) {
+        if (moving_filter_range.equals(getString(R.string.distance_10km))) {
             radius = 10000;
-        } else if (moving_filter_range == getString(R.string.distance_20km)) {
+        } else if (moving_filter_range.equals(getString(R.string.distance_20km))) {
             radius = 20000;
-        } else if (moving_filter_range == getString(R.string.distance_30km)) {
+        } else if (moving_filter_range.equals(getString(R.string.distance_30km))) {
             radius = 30000;
-        } else if (moving_filter_range == getString(R.string.distance_40km)) {
+        } else if (moving_filter_range.equals(getString(R.string.distance_40km))) {
             radius = 40000;
-        } else if (moving_filter_range == getString(R.string.distance_50km)) {
+        } else if (moving_filter_range.equals(getString(R.string.distance_50km))) {
             radius = 50000;
-        } else if (moving_filter_range == getString(R.string.distance_60km)) {
+        } else if (moving_filter_range.equals(getString(R.string.distance_60km))) {
             radius = 60000;
-        } else if (moving_filter_range == getString(R.string.distance_70km)) {
+        } else if (moving_filter_range.equals(getString(R.string.distance_70km))) {
             radius = 70000;
-        } else if (moving_filter_range == getString(R.string.distance_80km)) {
+        } else if (moving_filter_range.equals(getString(R.string.distance_80km))) {
             radius = 80000;
-        } else if (moving_filter_range == getString(R.string.distance_90km)) {
+        } else if (moving_filter_range.equals(getString(R.string.distance_90km))) {
             radius = 90000;
-        } else if (moving_filter_range == getString(R.string.distance_100km)) {
+        } else if (moving_filter_range.equals(getString(R.string.distance_100km))) {
             radius = 100000;
         }
         return radius;
@@ -477,7 +478,7 @@ public class OgnService extends Service implements AircraftBeaconListener, Recei
         Boolean moving_filter = sharedPreferences.getBoolean(getString(R.string.key_movingfilter_preference), true);
         String moving_filter_range = sharedPreferences.getString(getString(R.string.key_movingfilter_range_preference), getString(R.string.distance_10km));
 
-        float radius = getMovingfilterRange();
+        float radius = getMovingFilterRange();
 
         if (aprs_server.isEmpty()) {
             aprs_server = getString(R.string.default_aprsserver);
@@ -609,7 +610,7 @@ public class OgnService extends Service implements AircraftBeaconListener, Recei
                     return; //Should never happen! If this happens, two timers are active.
                 } else {
                     timerCurrentlyRunning = true;
-                    Timber.d("Update map by timer at " + new Date());
+                    Timber.d("Update map by timer at %s", new Date());
                 }
                 aircraftMap = convertAircraftMap(aircraftBundleMap);
                 Iterator<String> it = aircraftMap.keySet().iterator();
